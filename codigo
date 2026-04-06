@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galería A.D.D - Aprendiendo del desastre</title>
+  <style>
+    :root {
+      --color-bg-dark: #1b1919;
+      --color-text-dark: #cccccc;
+      --color-header-dark: #222222;
+      --color-btn-dark: #00ff00;
+      --color-hover-dark: #00ff00;
+      --color-border-dark: #555;
+      --color-modal-dark: #333;
+
+      --color-bg-light: #ffffff;
+      --color-text-light: #333333;
+      --color-header-light: #ffffe0;
+      --color-btn-light: #ffd700;
+      --color-hover-light: #ffd700;
+      --color-border-light: #ddd;
+      --color-modal-light: #fff;
+
+      --color-accent-dark: #00ff00;
+      --color-accent-light: #ffd700;
+    }
+    body {
+      background-color: var(--color-bg-dark);
+      color: var(--color-text-dark);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light-theme {
+      background-color: var(--color-bg-light);
+      color: var(--color-text-light);
+    }
+    header {
+      background-color: var(--color-header-dark);
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.3s;
+      gap: 16px;
+    }
+    body.light-theme header {
+      background-color: var(--color-header-light);
+    }
+    .theme-switcher button {
+      background-color: var(--color-btn-dark);
+      color: #333;
+      border: none;
+      padding: 8px 18px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color .2s;
+      outline: none;
+    }
+    body.light-theme .theme-switcher button {
+      background-color: var(--color-btn-light);
+    }
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-bar input[type="text"] {
+      padding: 7px 10px;
+      border: 1px solid #666;
+      background-color: #333;
+      color: var(--color-text-dark);
+      border-radius: 4px;
+      font-size: 1em;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.light-theme .search-bar input[type="text"] {
+      background: #fafafa;
+      color: var(--color-text-light);
+      border-color: #bbb;
+    }
+    .search-bar button {
+      background-color: var(--color-btn-dark);
+      color: #333;
+      font-weight:bold;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 13px;
+    }
+    body.light-theme .search-bar button {
+      background-color: var(--color-btn-light);
+    }
+    .container {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+    main {
+      flex: 1 1 600px;
+      padding: 20px 20px 0 20px;
+    }
+    .sidebar {
+      width: 270px;
+      background: var(--color-header-dark);
+      padding: 28px 18px;
+      box-sizing: border-box;
+      transition: background 0.3s, color 0.3s;
+      color: var(--color-text-dark);
+    }
+    body.light-theme .sidebar {
+      background: #f4f4f4;
+      color: var(--color-text-light);
+    }
+    .image-wall {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 13px;
+      padding: 14px 0;
+    }
+    .image-wall img {
+      width: 100%;
+      border: 2.5px solid var(--color-border-dark);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.3s;
+      box-sizing: border-box;
+      aspect-ratio: 1/1;
+      object-fit:cover;
+      background: #111;
+    }
+    .image-wall img:hover {
+      transform: scale(1.055);
+      border-color: var(--color-hover-dark);
+    }
+    body.light-theme .image-wall img {
+      border-color: var(--color-border-light);
+      background: #fff;
+    }
+    body.light-theme .image-wall img:hover {
+      border-color: var(--color-hover-light);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 18px 0 0 0;
+      align-items: center;
+    }
+    .pagination button {
+      background: #444;
+      color: #fff;
+      border: 1.5px solid #666;
+      padding: 8px 19px;
+      border-radius:4px;
+      cursor:pointer;
+      font-weight:bold;
+      transition:background 0.2s;
+      outline:none;
+    }
+    .pagination button:disabled {
+      filter: grayscale(75%);
+      opacity:.6;
+      cursor: not-allowed;
+    }
+    .pagination button:hover:not(:disabled) {
+      background: var(--color-btn-dark);
+      color: #222;
+    }
+    body.light-theme .pagination button { background: #eee; color: #333; border-color:#bbb; }
+    body.light-theme .pagination button:hover:not(:disabled) { background: var(--color-btn-light); color:#333;}
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1001;
+      left:0; top:0; width:100vw; height:100vh;
+      background: rgba(0,0,0,0.92);
+      justify-content: center;
+      align-items: center;
+      transition:opacity 0.27s;
+      opacity:0;
+    }
+    .modal.open { display:flex; opacity:1; }
+    .modal-content {
+      background: var(--color-modal-dark);
+      color: var(--color-text-dark);
+      padding: 24px 24px 20px 24px;
+      border-radius: 12px;
+      max-width:90vw;
+      max-height:92vh;
+      box-sizing: border-box;
+      overflow:auto;
+      text-align:left;
+      position: relative;
+      display:flex;
+      gap:25px;
+      align-items: flex-start;
+      box-shadow:0 2px 40px rgba(0,255,0,0.08);
+      animation:popModal .20s;
+    }
+    @keyframes popModal { from{transform:scale(.94); opacity:.25;} to{transform:scale(1); opacity:1;} }
+    body.light-theme .modal-content { background: var(--color-modal-light); color:var(--color-text-light);}
+    .modal img { max-width:350px; max-height:74vh; border-radius:8px; background:#202; }
+    .modal-right { flex:1; display:flex; flex-direction:column; gap:17px;}
+    .close {
+      position:absolute; top:8px; right:18px;
+      color:#aaa; font-size:32px; font-weight:bold; cursor:pointer;
+    }
+    .close:focus { outline:2px solid var(--color-accent-dark);}
+    .close:hover, .close:focus { color:#fff;}
+    body.light-theme .close { color:#333;}
+    body.light-theme .close:hover { color:#000;}
+    .like-dislike {
+      margin:10px 0 18px 0;
+      display:flex;
+      justify-content:flex-start;
+      align-items:center;
+      gap:15px;
+    }
+    .like-dislike button {
+      background: none;
+      border: 2px solid var(--color-accent-dark);
+      color: var(--color-accent-dark);
+      padding: 7px 20px;
+      border-radius:25px;
+      cursor:pointer;
+      font-size:1.1rem;
+      font-weight: bold;
+      margin-right: 3px;
+      transition: background 0.22s, color 0.22s, border-color 0.3s;
+    }
+    .like-dislike button:active {
+      background:var(--color-accent-dark); color:#333;
+    }
+    .like-dislike .like-count, .like-dislike .dislike-count {
+      font-size: 1rem;
+      margin-left: 2px;
+      margin-right: 12px;
+      font-weight: normal;
+    }
+    body.light-theme .like-dislike button {
+      border-color:var(--color-accent-light); color: var(--color-accent-light);
+    }
+    body.light-theme .like-dislike button:active {
+      background:var(--color-accent-light); color:#333;
+    }
+    .comments { margin-top: 17px;}
+    .comments h3 { margin-bottom: 7px; color:var(--color-accent-dark);}
+    body.light-theme .comments h3 { color:var(--color-accent-light);}
+    .comments textarea {
+      width: 100%; min-height:65px; max-height:180px; padding: 10px;
+      border: 1px solid #666; border-radius:4px;
+      background:#292929; color:var(--color-text-dark);
+      transition:background 0.3s, color 0.3s, border-color 0.3s;
+      margin-bottom:3px;
+      font-size:1em;
+      resize: vertical;
+    }
+    body.light-theme .comments textarea { background:#fafafa; color:var(--color-text-light); border-color:#bbb;}
+
+    .comments button { margin-top:5px; background:var(--color-btn-dark); color:#333; font-weight:bold; }
+    body.light-theme .comments button { background:var(--color-btn-light);}
+    #commentsList { margin: 0 0 14px 0; }
+    #commentsList p { background:#232323; padding: 7px 9px; margin-bottom: 5px; border-radius: 4px;}
+    body.light-theme #commentsList p { background: #f0f0f0; color:#333;}
+    .comment-notice {
+      color:var(--color-accent-dark); font-size:0.97em; margin-top:3px;
+    }
+    .themes-section { margin-top:38px; padding-bottom:16px;}
+    .themes-section h2 { text-align:center; margin-bottom:35px; color:var(--color-accent-dark); font-size:2.1em;}
+    body.light-theme .themes-section h2 { color:var(--color-accent-light);}
+    .theme { margin-bottom:38px;}
+    .theme h3 { text-align:center; margin-bottom:14px; color:var(--color-text-dark); font-size:1.13em;}
+    body.light-theme .theme h3 { color:#222;}
+    .theme-images {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+      gap:13px;
+      justify-items: center;
+    }
+    .theme-images img {
+      width: 100%; max-width: 170px; border:2px solid var(--color-border-dark); border-radius:8px; cursor:pointer;
+      object-fit: cover; aspect-ratio:1/1;
+      background:#333; transition:transform 0.2s, border-color 0.3s;
+    }
+    .theme-images img:hover { transform:scale(1.045); border-color:var(--color-accent-dark);}
+    body.light-theme .theme-images img { border-color:var(--color-border-light); background: #fff;}
+    body.light-theme .theme-images img:hover { border-color: var(--color-accent-light);}
+    @media (max-width: 900px) {
+      .container { flex-direction:column; }
+      aside.sidebar { width:100vw; min-width:0; border-top:1px solid #222; }
+    }
+    @media (max-width: 700px) {
+      .image-wall { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+      main, aside.sidebar { padding: 8px;}
+      .image-wall,.theme-images { gap: 7px; }
+      .modal-content { flex-direction:column; gap:14px; min-width:0; max-width:96vw;}
+      .modal img { max-width:90vw; max-height:220px;}
+    }
+    /* Footer */
+    footer {
+      background:#222; color:#ccc; padding:20px 0; text-align:center;
+      margin-top:38px; border-top:2px solid var(--color-accent-dark); width:100vw; box-sizing:border-box;
+    }
+    .footer-icons {display:flex; justify-content:center; gap:33px; align-items:center; margin-bottom:6px; }
+    .footer-icons img {
+      width:39px; height:39px; cursor:pointer;
+      border-radius:4px; background: #333;
+      transition: transform 0.22s, box-shadow 0.16s;
+    }
+    .footer-icons img:hover {
+      transform:scale(1.16); box-shadow: 0 0 12px var(--color-accent-dark);
+    }
+    body.light-theme footer { background:#f8f8e8; color:#111;border-color:var(--color-accent-light);}
+    body.light-theme .footer-icons img:hover { box-shadow:0 0 12px var(--color-accent-light);}
+    .footer-copy { margin-top:10px; color:var(--color-accent-dark);}
+    body.light-theme .footer-copy { color:var(--color-accent-light);}
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h2 style="display:inline; margin:0; margin-right:12px;">(A.D.D)</h2>
+      <span>Aprendiendo del desastre</span>
+    </div>
+    <div class="theme-switcher">
+      <button id="themeBtn" aria-label="Cambiar tema">Tema Claro</button>
+    </div>
+    <form class="search-bar" id="searchForm" autocomplete="off">
+      <input id="searchInput" type="text" placeholder="Buscar imágenes..." aria-label="Buscar imágenes">
+      <button type="submit" aria-label="Buscar">Buscar</button>
+    </form>
+  </header>
+
+  <div class="container">
+    <main>
+      <div>
+        <div class="image-wall" id="imageWall"></div>
+        <div class="pagination">
+          <button id="prevBtn" aria-label="Anterior">« Anterior</button>
+          <span>Página <strong id="pageNumber">1</strong> de <strong id="pagesTotal">1</strong></span>
+          <button id="nextBtn" aria-label="Siguiente">Siguiente »</button>
+        </div>
+      </div>
+      <!-- Themes Section -->
+      <section class="themes-section">
+        <h2>Explora Temas</h2>
+        <div class="theme">
+          <h3>Logotipos Bizarros</h3>
+          <div class="theme-images" id="theme-bizarros"></div>
+        </div>
+        <div class="theme">
+          <h3>Dibujo</h3>
+          <div class="theme-images" id="theme-dibujo"></div>
+        </div>
+        <div class="theme">
+          <h3>Creative Destruction</h3>
+          <div class="theme-images" id="theme-destruction"></div>
+        </div>
+      </section>
+    </main>
+    <aside class="sidebar">
+      <h2>¿Quiénes somos?</h2>
+      <p>
+        Bienvenido a <strong>A.D.D</strong> (Aprendiendo del Desastre), un espacio donde puedes explorar y mostrar tus creaciones sin miedo a juicios ni malos tratos. Aquí celebramos aprender del error y ver belleza en la imperfección.
+      </p>
+      <ul>
+        <li><strong>Visión:</strong> Dar un espacio para mostrar ideas de aprendices y profesionales.</li>
+        <li><strong>Ampliación de Imágenes:</strong> Compartir procesos y errores para crecer juntos.</li>
+        <li><strong>Interacción:</strong> Likes, dislikes y comentarios anónimos para apoyar o compartir opiniones.</li>
+      </ul>
+      <p>
+        ¡Disfruta explorando, creando y mostrando sin miedo al fallar: aquí todos estamos aprendiendo del desastre!
+      </p>
+    </aside>
+  </div>
+
+  <!-- Modal mejorado -->
+  <div id="imageModal" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-content">
+      <button type="button" class="close" id="closeModal" aria-label="Cerrar ventana">&times;</button>
+      <img id="modalImg" src="" alt="Vista previa imagen">
+      <div class="modal-right">
+        <div class="like-dislike">
+          <button id="likeBtn" aria-label="Me gusta">👍</button>
+          <span class="like-count" id="likeCount">0</span>
+          <button id="dislikeBtn" aria-label="No me gusta">👎</button>
+          <span class="dislike-count" id="dislikeCount">0</span>
+        </div>
+        <div class="comments">
+          <h3>Comentarios</h3>
+          <div id="commentsList"></div>
+          <textarea id="commentInput" placeholder="Deja tu comentario..." aria-label="Comentario"></textarea>
+          <button id="submitComment" type="button">Enviar Comentario</button>
+          <div id="commentNotice" class="comment-notice" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <nav class="footer-icons" id="footer-icons" aria-label="Redes sociales y contacto">
+        <img src="https://cdn-icons-png.flaticon.com/256/25/25231.png" alt="GitHub" title="GitHub">
+        <img src="https://images.vexels.com/media/users/3/137380/isolated/lists/1b2ca367caa7eff8b45c09ec09b44c16-logotipo-de-icono-de-instagram.png" alt="Instagram" title="Instagram">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/X_icon.svg/960px-X_icon.svg.png" alt="Twitter" title="Twitter">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Gmail_icon_%282020%29.svg/3840px-Gmail_icon_%282020%29.svg.png" alt="Email" title="Email">
+    </nav>
+    <div class="footer-copy">&copy; 2024 A.D.D - Aprendiendo del desastre</div>
+  </footer>
+  
+  <script>
+    // Galería de imágenes y paginación dinámica
+    const images = [
+      {src:'https://i.pinimg.com/1200x/23/3f/e7/233fe733add4c2eef4f22bde6ea46786.jpg',alt:'Imagen 1',id:'1'},
+      {src:'https://i.pinimg.com/736x/04/a6/33/04a633d65d2764c8595eff8ef20b48a1.jpg',alt:'Imagen 2',id:'2'},
+      {src:'https://i.pinimg.com/736x/42/ec/e9/42ece999aa08b5e1ac64aba35529cb5c.jpg',alt:'Imagen 3',id:'3'},
+      {src:'https://i.pinimg.com/736x/e9/15/04/e91504c38100ba5404e1a3116b9248a0.jpg',alt:'Imagen 4',id:'4'},
+      {src:'https://i.pinimg.com/1200x/00/b5/8a/00b58aaa27865a9e715e3ca125d600de.jpg',alt:'Imagen 5',id:'5'},
+      {src:'https://i.pinimg.com/1200x/f0/b2/3a/f0b23a8041e15c750d0557eb34b19c71.jpg',alt:'Imagen 6',id:'6'},
+      {src:'https://i.pinimg.com/736x/f1/fb/36/f1fb364a18498ac16fd986f38fffa199.jpg',alt:'Imagen 7',id:'7'},
+      {src:'https://i.pinimg.com/736x/d6/20/47/d62047c5d2ebbe8e074bfd8a605a03ba.jpg',alt:'Imagen 8',id:'8'},
+      {src:'https://i.pinimg.com/736x/13/b7/6f/13b76f652fe34ec6f34fc812df3343a8.jpg',alt:'Imagen 9',id:'9'},
+      {src:'https://i.pinimg.com/1200x/29/a9/46/29a9468532a5f9fdd2fba7591c44ca9a.jpg',alt:'Imagen 10',id:'10'},
+      {src:'https://i.pinimg.com/1200x/2f/6a/43/2f6a43ee175788791225fb72024d5f4b.jpg',alt:'Imagen 11',id:'11'},
+      {src:'https://i.pinimg.com/1200x/36/88/86/368886fc5b11d6c592fdfae8928fa885.jpg',alt:'Imagen 12',id:'12'},
+      {src:'https://i.pinimg.com/736x/f6/17/ea/f617ea2c93384a51e048c0260afa7cba.jpg',alt:'Imagen 13',id:'13'},
+      {src:'https://i.pinimg.com/1200x/b8/f4/5a/b8f45abf4321f1f7b4657fef2249aaf7.jpg',alt:'Imagen 14',id:'14'},
+    ];
+    // Temas
+    const themeImages = {
+      bizarros: [
+        {src:'https://i.pinimg.com/736x/a2/ef/d1/a2efd1c2a1ab0361023ffaf6c400e45b.jpg',alt:'Graphic Design 1',id:'gd1'},
+        {src:'https://i.pinimg.com/1200x/9c/0d/61/9c0d61b88b14ba58d7e3804b5888928a.jpg',alt:'Graphic Design 2',id:'gd2'},
+        {src:'https://i.pinimg.com/1200x/78/12/da/7812da003aa56a854c9ba536c0a462ca.jpg',alt:'Graphic Design 3',id:'gd3'},
+        {src:'https://i.pinimg.com/736x/7c/d3/5b/7cd35b78078201fac51262698e23f37c.jpg',alt:'Graphic Design 4',id:'gd4'},
+      ],
+      dibujo: [
+        {src:'https://i.pinimg.com/1200x/56/1c/c4/561cc475cd7cc9eb8466449e2c296f92.jpg',alt:'Ugly Drawing 1',id:'ud1'},
+        {src:'https://i.pinimg.com/736x/cc/98/0c/cc980c26cd08c284d38fbdd1cfb2cdcb.jpg',alt:'Ugly Drawing 2',id:'ud2'},
+        {src:'https://i.pinimg.com/1200x/34/1b/3c/341b3c48d1ed2a6eb5e7351afb041eb5.jpg',alt:'Ugly Drawing 3',id:'ud3'},
+        {src:'https://i.pinimg.com/1200x/28/00/39/280039191a641e43b92a1b1da129a0a2.jpg',alt:'Ugly Drawing 4',id:'ud4'},
+      ],
+      destruction: [
+        {src:'https://i.pinimg.com/736x/fc/bb/cd/fcbbcdf3cbaf993ceb72d91c249f3864.jpg',alt:'Creative Destruction 1',id:'cd1'},
+        {src:'https://i.pinimg.com/1200x/31/58/64/31586467e73a9b0e41348bc76ef7143d.jpg',alt:'Creative Destruction 2',id:'cd2'},
+        {src:'https://i.pinimg.com/1200x/92/21/7f/92217f9319be008cfac9e01de3b35e45.jpg',alt:'Creative Destruction 3',id:'cd3'},
+        {src:'https://i.pinimg.com/1200x/cb/72/7c/cb727cb5ef78d5da463831d6e3dfec1a.jpg',alt:'Creative Destruction 4',id:'cd4'},
+      ]
+    };
+    // Paginación
+    const pageSize = 8;
+    let currentPage = 1, filteredImages = images.slice();
+    function showImages() {
+      const wall = document.getElementById('imageWall');
+      wall.innerHTML = '';
+      const start = (currentPage-1) * pageSize, pageImgs = filteredImages.slice(start, start+pageSize);
+      for (const img of pageImgs) {
+        const el = document.createElement('img');
+        el.src = img.src; el.alt = img.alt; el.dataset.id = img.id; el.tabIndex = 0;
+        el.addEventListener('click',()=>openModal(img));
+        el.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)) openModal(img);});
+        wall.appendChild(el);
+      }
+      document.getElementById('pageNumber').textContent = currentPage;
+      document.getElementById('pagesTotal').textContent = Math.ceil(filteredImages.length/pageSize) || 1;
+      prevBtn.disabled = currentPage===1; nextBtn.disabled = currentPage * pageSize >= filteredImages.length;
+    }
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    prevBtn.onclick = ()=> { if(currentPage>1){ currentPage--; showImages();} }
+    nextBtn.onclick = ()=> { if(currentPage*pageSize<filteredImages.length){ currentPage++; showImages(); } }
+    // Buscador
+    const searchForm = document.getElementById('searchForm');
+    searchForm.onsubmit = (e)=>{
+      e.preventDefault();
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      filteredImages = !q ? images.slice() : images.filter(img=>img.alt.toLowerCase().includes(q));
+      currentPage=1;
+      showImages();
+    }
+    // Tema (oscuro/claro) persistente
+    const body = document.body, themeBtn = document.getElementById('themeBtn');
+    let isDark = true;
+    function setTheme(dark) {
+      isDark = dark;
+      body.classList.toggle('light-theme', !dark);
+      themeBtn.textContent = dark ? 'Tema Claro' : 'Tema Oscuro';
+      localStorage.setItem('theme', dark?'dark':'light');
+    }
+    (function initTheme(){
+      const stored = localStorage.getItem('theme');
+      setTheme(stored !== 'light');
+    })();
+    themeBtn.onclick = ()=>setTheme(!isDark);
+
+    // Modal mejorado
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    const closeModalBtn = document.getElementById('closeModal');
+    const likeBtn = document.getElementById('likeBtn'), dislikeBtn = document.getElementById('dislikeBtn');
+    const likeCount = document.getElementById('likeCount'), dislikeCount = document.getElementById('dislikeCount');
+    const commentsList = document.getElementById('commentsList');
+    const commentInput = document.getElementById('commentInput'), submitComment = document.getElementById('submitComment');
+    const commentNotice = document.getElementById('commentNotice');
+    let currentImage = null;
+    function getStorageData(id){
+      return JSON.parse(localStorage.getItem('image_'+id)) || {likes:0,dislikes:0,comments:[]};
+    }
+    function setStorageData(id,data){
+      localStorage.setItem('image_'+id,JSON.stringify(data));
+    }
+    function refreshModal(){
+      if(!currentImage) return;
+      const data = getStorageData(currentImage.id);
+      likeCount.textContent = data.likes;
+      dislikeCount.textContent = data.dislikes;
+      commentsList.innerHTML = data.comments.map(txt=>`<p>${txt}</p>`).join('') || '<p style="color:#666;">Sin comentarios aún.</p>';
+    }
+    function openModal(img){
+      currentImage = img;
+      modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+      modalImg.src = img.src; modalImg.alt = img.alt;
+      refreshModal(); commentInput.value = ''; commentNotice.style.display='none';
+      // Evita scroll fondo, enfoca el modal
+      body.style.overflow='hidden';
+      closeModalBtn.focus();
+    }
+    function closeModal(){
+      modal.classList.remove('open'); modal.setAttribute('aria-hidden','true');
+      body.style.overflow='';
+      // Limpia img y comentarios
+      modalImg.src=''; currentImage=null;
+    }
+    closeModalBtn.onclick = closeModal;
+    window.addEventListener('keydown', e=>{
+      if(modal.classList.contains('open')){
+        if(e.key==='Escape'){ closeModal(); }
+      }
+    });
+    modal.addEventListener('mousedown', e=>{ if(e.target===modal) closeModal(); });
+    // Likes, dislikes
+    likeBtn.onclick = ()=> {
+      if(!currentImage) return;
+      const data = getStorageData(currentImage.id);
+      data.likes++; setStorageData(currentImage.id, data); refreshModal();
+    }
+    dislikeBtn.onclick = ()=>{
+      if(!currentImage) return;
+      const data = getStorageData(currentImage.id);
+      data.dislikes++; setStorageData(currentImage.id, data); refreshModal();
+    }
+    // Añadir comentario anónimo
+    submitComment.onclick = ()=>{
+      if(!currentImage) return;
+      let val = commentInput.value.trim();
+      if(!val){
+        // feedback
+        commentNotice.style.display='block';
+        commentNotice.textContent = 'Debes escribir algo para comentar.';
+        commentInput.focus();
+        return;
+      }
+      const data = getStorageData(currentImage.id);
+      data.comments.push(val); setStorageData(currentImage.id,data); refreshModal();
+      commentInput.value = ''; commentNotice.style.display='none';
+    }
+    commentInput.oninput = ()=>{ commentNotice.style.display='none'; };
+    // Render temas
+    function renderThemeImgs(arr, containerId){
+      const div = document.getElementById(containerId);
+      div.innerHTML = '';
+      for(const img of arr){
+        const el = document.createElement('img');
+        el.src = img.src; el.alt = img.alt; el.dataset.id = img.id; el.tabIndex=0;
+        el.addEventListener('click',()=>openModal(img));
+        el.addEventListener('keydown', e=>{if(['Enter',' '].includes(e.key)) openModal(img);});
+        div.appendChild(el);
+      }
+    }
+    renderThemeImgs(themeImages.bizarros, 'theme-bizarros');
+    renderThemeImgs(themeImages.dibujo, 'theme-dibujo');
+    renderThemeImgs(themeImages.destruction, 'theme-destruction');
+    // Inicializar galería
+    showImages();
+
+    // Footer iconos clicables
+    document.querySelectorAll('#footer-icons img').forEach(img=>{
+      img.addEventListener('click',()=>{
+        switch(img.alt){
+          case 'GitHub':window.open('https://github.com/','_blank');break;
+          case 'Instagram':window.open('https://instagram.com/','_blank');break;
+          case 'Twitter':window.open('https://twitter.com/','_blank');break;
+          case 'Email':window.location.href='mailto:example@gmail.com';break;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
